@@ -33,8 +33,9 @@ const background = (index: number) => {
 };
 ---
 
-<div class="friend-link-list" style={`--friend-link-columns: ${columns};`}>
-  {items.map((item, index) => {
+<div class="friend-link-region">
+  <div class="friend-link-list" style={`--friend-link-columns: ${columns};`}>
+    {items.map((item, index) => {
     const name = trim(item.name);
     const avatar = trim(item.avatar);
     const explicitBackground = randomBackground ? '' : trim(item.backgroundImage);
@@ -64,11 +65,13 @@ const background = (index: number) => {
         </span>
       </a>
     );
-  })}
+    })}
+  </div>
 </div>
 
 <style>
-  .friend-link-list { container-type: inline-size; display: grid; grid-template-columns: repeat(var(--friend-link-columns), minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+  .friend-link-region { container-type: inline-size; margin: 18px 0; }
+  .friend-link-list { display: grid; grid-template-columns: repeat(var(--friend-link-columns), minmax(0, 1fr)); gap: 12px; }
   .friend-link-card { position: relative; isolation: isolate; display: grid; grid-template-columns: 50px minmax(0, 1fr); align-items: center; gap: 11px; min-width: 0; min-height: 90px; padding: 13px; overflow: hidden; border: 1px solid var(--paper-line); border-radius: 8px; background: var(--paper-surface); color: var(--paper-ink); text-decoration: none; box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper-surface) 82%, transparent); transition: transform 160ms ease, border-color 160ms ease, background 160ms ease; }
   .friend-link-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--paper-accent) 54%, var(--paper-line)); }
   .friend-link-card--random { background: color-mix(in srgb, var(--friend-link-random), var(--paper-surface) 76%); }
@@ -84,5 +87,7 @@ const background = (index: number) => {
   @container (max-width: 920px) { .friend-link-list { grid-template-columns: repeat(min(3, var(--friend-link-columns)), minmax(0, 1fr)); } }
   @container (max-width: 620px) { .friend-link-list { grid-template-columns: repeat(min(2, var(--friend-link-columns)), minmax(0, 1fr)); } }
   @container (max-width: 390px) { .friend-link-list { grid-template-columns: 1fr; } }
+  /* A narrow viewport needs readable cards even when a desktop column count is explicit. */
+  @media (max-width: 720px) { .friend-link-list { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) { .friend-link-card { transition: none; } .friend-link-card:hover { transform: none; } }
 </style>
