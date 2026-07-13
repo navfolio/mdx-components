@@ -1,5 +1,7 @@
 ---
 import { RefreshCw, Rss } from 'lucide-astro';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import {
   crawlFriendPosts,
   parseFriendPosts,
@@ -22,13 +24,20 @@ interface Props {
 
 const { posts, feedSrc, limit = 10, title = 'Friend circle', refreshLabel = 'Refresh posts', ...dataSource } = Astro.props;
 const friends = await resolveFriendLinkItems(dataSource);
+const readFeedSource = async (source: string) => {
+  if (/^https?:\/\//i.test(source)) {
+    const response = await fetch(source);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.text();
+  }
+
+  return readFile(resolve(process.cwd(), 'public', source.replace(/^\//, '')), 'utf8');
+};
 const loadPosts = async (): Promise<FriendPost[]> => {
   if (posts) return posts;
   if (feedSrc?.trim()) {
     try {
-      const response = await fetch(feedSrc.trim());
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-      return parseFriendPosts(JSON.parse(await response.text()));
+      return parseFriendPosts(JSON.parse(await readFeedSource(feedSrc.trim())));
     } catch (error) {
       console.error(`Unable to load friend circle data from ${feedSrc}:`, error);
       return [];
@@ -98,7 +107,7 @@ const activeFriends = new Set(allPosts.map((post) => post.authorUrl || post.auth
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 </script>
 
-<style>
+<style is:global>
   .friend-circle { margin: 34px 0; border-top: 1px solid var(--paper-line); border-bottom: 1px solid var(--paper-line); }
   .friend-circle__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 0; }
   .friend-circle__eyebrow { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--paper-ink); font-family: var(--font-meta); font-size: .86rem; font-weight: 700; }
