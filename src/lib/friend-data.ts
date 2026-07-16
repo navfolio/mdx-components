@@ -22,6 +22,21 @@ export type FriendPost = {
 
 export type FriendDataSource = 'auto' | 'src' | 'items';
 
+export type FriendLinkFieldMap = Partial<{
+  name: string;
+  url: string;
+  bio: string;
+  avatar: string;
+  backgroundImage: string;
+  rss: string;
+  sticky: string;
+}>;
+
+export type FriendCircleFeed = {
+  friends: FriendLinkItem[];
+  posts: FriendPost[];
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -41,22 +56,75 @@ export const isFriendLinkItem = (value: unknown): value is FriendLinkItem =>
     typeof value.sticky === 'boolean' ||
     typeof value.sticky === 'number');
 
-const parseFriendLinkJson = (text: string, label: string): FriendLinkItem[] => {
+const defaultFields = {
+  name: 'name',
+  url: 'url',
+  bio: 'bio',
+  avatar: 'avatar',
+  backgroundImage: 'backgroundImage',
+  rss: 'rss',
+  sticky: 'sticky',
+} satisfies Required<FriendLinkFieldMap>;
+
+const normalizeFriendLinkItem = (
+  value: unknown,
+  fieldMap: FriendLinkFieldMap = {},
+): FriendLinkItem | undefined => {
+  if (!isRecord(value)) return undefined;
+  const fields = { ...defaultFields, ...fieldMap };
+  const rawName = value[fields.name];
+  const rawUrl = value[fields.url];
+  const name = typeof rawName === 'string' ? rawName.trim() : '';
+  const url = typeof rawUrl === 'string' ? rawUrl.trim() : '';
+  if (!name || !url) return undefined;
+  const optional = (field: string) =>
+    typeof value[field] === 'string' ? value[field].trim() || null : null;
+  const sticky = value[fields.sticky];
+  return {
+    name,
+    url,
+    bio: optional(fields.bio) ?? undefined,
+    avatar: optional(fields.avatar),
+    backgroundImage: optional(fields.backgroundImage),
+    rss: optional(fields.rss),
+    sticky: typeof sticky === 'boolean' || typeof sticky === 'number' ? sticky : undefined,
+  };
+};
+
+const normalizeFriendLinks = (
+  value: unknown,
+  fieldMap: FriendLinkFieldMap = {},
+): FriendLinkItem[] =>
+  Array.isArray(value)
+    ? value.flatMap((item) => {
+        const normalized = normalizeFriendLinkItem(item, fieldMap);
+        return normalized ? [normalized] : [];
+      })
+    : [];
+
+const parseFriendLinkJson = (
+  text: string,
+  label: string,
+  fieldMap: FriendLinkFieldMap,
+): FriendLinkItem[] => {
   const data: unknown = JSON.parse(text);
-  if (!Array.isArray(data) || data.some((item) => !isFriendLinkItem(item))) {
+  const items = normalizeFriendLinks(data, fieldMap);
+  if (!Array.isArray(data) || items.length !== data.length) {
     throw new Error(`Friend link JSON from ${label} must be an array of valid friend links.`);
   }
-  return data;
+  return items;
 };
 
 export const resolveFriendLinkItems = async ({
   items,
   src,
   source = 'auto',
+  fieldMap,
 }: {
   items?: FriendLinkItem[];
   src?: string;
   source?: FriendDataSource;
+  fieldMap?: FriendLinkFieldMap;
 }): Promise<FriendLinkItem[]> => {
   if (source === 'items') return items ?? [];
   const sourceUrl = src?.trim();
@@ -65,7 +133,7 @@ export const resolveFriendLinkItems = async ({
   try {
     const response = await fetch(sourceUrl);
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return parseFriendLinkJson(await response.text(), sourceUrl);
+    return parseFriendLinkJson(await response.text(), sourceUrl, fieldMap ?? {});
   } catch (error) {
     console.error(`Unable to load friend links from ${sourceUrl}:`, error);
     return source === 'src' ? [] : (items ?? []);
@@ -119,30 +187,39 @@ export const parseFeed = (xml: string, friend: FriendLinkItem): FriendPost[] => 
     const url = firstText(entry.link, isRecord(atomLink) ? atomLink['@_href'] : '');
     if (!title || !url) return [];
     const authorRecord = isRecord(entry.author) ? entry.author : undefined;
-    return [{
-      title,
-      url,
-      date: firstText(entry.pubDate, entry.published, entry.updated, entry.date),
-      tags: toTags(entry.category),
-      author: firstText(authorRecord?.name, rss?.title, atom?.title, friend.name),
-      authorUrl: friend.url,
-      avatar: friend.avatar,
-    }];
+    return [
+      {
+        title,
+        url,
+        date: firstText(entry.pubDate, entry.published, entry.updated, entry.date),
+        tags: toTags(entry.category),
+        author: firstText(authorRecord?.name, rss?.title, atom?.title, friend.name),
+        authorUrl: friend.url,
+        avatar: friend.avatar,
+      },
+    ];
   });
 };
 
-export const crawlFriendPosts = async (items: FriendLinkItem[], perFeed = 12): Promise<FriendPost[]> => {
+export const crawlFriendPosts = async (
+  items: FriendLinkItem[],
+  perFeed = 12,
+): Promise<FriendPost[]> => {
   const results = await Promise.all(
-    items.filter((item) => item.rss?.trim()).map(async (friend) => {
-      try {
-        const response = await fetch(friend.rss!.trim(), { signal: AbortSignal.timeout(8000) });
-        if (!response.ok) return [];
-        return parseFeed(await response.text(), friend).slice(0, perFeed);
-      } catch (error) {
-        console.warn(`Unable to read friend RSS for ${friend.name ?? friend.url}:`, error);
-        return [];
-      }
-    }),
+    items
+      .filter((item) => item.rss?.trim())
+      .map(async (friend) => {
+        try {
+          const response = await fetch(friend.rss!.trim(), {
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!response.ok) return [];
+          return parseFeed(await response.text(), friend).slice(0, perFeed);
+        } catch (error) {
+          console.warn(`Unable to read friend RSS for ${friend.name ?? friend.url}:`, error);
+          return [];
+        }
+      }),
   );
   return results.flat().sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''));
 };
@@ -155,14 +232,25 @@ export const parseFriendPosts = (value: unknown): FriendPost[] => {
     const url = text(item.url);
     const author = text(item.author);
     if (!title || !url || !author) return [];
-    return [{
-      title,
-      url,
-      author,
-      date: text(item.date),
-      authorUrl: text(item.authorUrl),
-      avatar: text(item.avatar) || null,
-      tags: toTags(item.tags),
-    }];
+    return [
+      {
+        title,
+        url,
+        author,
+        date: text(item.date),
+        authorUrl: text(item.authorUrl),
+        avatar: text(item.avatar) || null,
+        tags: toTags(item.tags),
+      },
+    ];
   });
+};
+
+export const parseFriendCircleFeed = (value: unknown): FriendCircleFeed => {
+  if (Array.isArray(value)) return { friends: [], posts: parseFriendPosts(value) };
+  if (!isRecord(value)) return { friends: [], posts: [] };
+  return {
+    friends: normalizeFriendLinks(value.friends),
+    posts: parseFriendPosts(value.posts),
+  };
 };

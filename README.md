@@ -42,7 +42,7 @@ Desktop uses four columns by default and naturally contracts to three, two, then
 
 ## Friend circle
 
-`FriendCircle` renders a compact static feed below the links. Add `rss` to friend data and it crawls RSS/Atom feeds at build time. The refresh button samples already-built data in the browser; it never creates cross-origin requests for visitors.
+`FriendCircle` renders a compact static feed below the links. Add `rss` to friend data and it crawls RSS/Atom feeds at build time. The refresh button samples already-built data in the browser; it never creates cross-origin requests for visitors. Its `title` defaults to `Friend circle`; pass a non-empty `title` to customize it. When a remote friend-link source uses different keys, pass `fieldMap={{ avatar: 'image' }}` (and any of `name`, `url`, `bio`, `backgroundImage`, `rss`, or `sticky`) to either friend component.
 
 For production, periodically generate a JSON file with GitHub Actions and pass it with `feedSrc="/friend-circle.json"`. This avoids deployment failures from unreachable feeds and preserves the same component API for a Vercel Function or self-hosted service later.
 
