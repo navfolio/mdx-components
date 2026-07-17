@@ -46,6 +46,20 @@ Desktop uses four columns by default and naturally contracts to three, two, then
 
 For production, periodically generate a JSON file with GitHub Actions and pass it with `feedSrc="/friend-circle.json"`. This avoids deployment failures from unreachable feeds and preserves the same component API for a Vercel Function or self-hosted service later.
 
+## Music player
+
+`MusicPlayer` has a fully themed native player for local files or permitted direct audio URLs. Its default `theme="system"` maps its local `--music-*` tokens to the host's Navfolio tokens and follows the active Navfolio color palette and light/dark mode. `site` remains a compatible alias. `paper`, `midnight`, `vinyl`, and `neon` are muted, self-contained light/dark presets. Use `variant="inline"` for a borderless article embed. A custom theme supplies complete `light` and `dark` token sets (`surface`, `surfaceMuted`, `text`, `textMuted`, `accent`, `accentContrast`, and `line`).
+
+```astro
+import MusicPlayer from '@navfolio/mdx-components/MusicPlayer.astro';
+
+<MusicPlayer title="Example" artist="Navfolio" src="/audio/example.mp3" theme="vinyl" />
+```
+
+Official third-party players are rendered inside their provider iframe. Set `provider` and pass a normal Spotify or SoundCloud `url`, or an official `embedUrl` for Bandcamp, Apple Music, and 网易云音乐. The outer card follows the selected local theme; iframe internals remain provider-owned.
+
+`MusicPlayer` also accepts `size="narrow|compact|normal|wide|full"`. Pass a native `playlist` array to reveal a selectable, collapsed track list.
+
 ## Peer dependencies
 
 The host Astro project supplies `astro`, `lucide-astro`, and `mermaid` (the latter is only required for `MermaidRenderer`).

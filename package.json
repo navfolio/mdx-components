@@ -8,15 +8,26 @@
     "type": "git",
     "url": "git+https://github.com/navfolio/mdx-components.git"
   },
-  "keywords": ["astro", "mdx", "navfolio", "components"],
-  "files": ["src", "README.md", "LICENSE"],
+  "keywords": [
+    "astro",
+    "mdx",
+    "navfolio",
+    "components"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     "./FriendLinkCard.astro": "./src/FriendLinkCard.astro",
     "./FriendCircle.astro": "./src/FriendCircle.astro",
     "./LongImage.astro": "./src/LongImage.astro",
     "./MermaidRenderer.astro": "./src/MermaidRenderer.astro",
     "./Carousel.astro": "./src/Carousel.astro",
+    "./MusicPlayer.astro": "./src/MusicPlayer.astro",
     "./ZoomableImage.astro": "./src/ZoomableImage.astro",
+    "./music-theme": "./src/lib/music-theme.ts",
     "./friend-data": "./src/lib/friend-data.ts"
   },
   "peerDependencies": {
