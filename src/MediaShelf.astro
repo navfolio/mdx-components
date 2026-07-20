@@ -77,6 +77,7 @@ const ratingLabel = (rating: number | undefined) =>
   .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='album'], .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='podcast'] { aspect-ratio:1; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__content { width:100%; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__content p { display:none; }
+  .navfolio-media-shelf--shelf .navfolio-media-shelf__item:only-child { grid-column:1 / -1; width:min(100%, 176px); justify-self:center; }
 
   .navfolio-media-shelf--inline { display:grid; gap:22px; }
   .navfolio-media-shelf--inline .navfolio-media-shelf__item { display:grid; grid-template-columns:clamp(92px, 18cqi, 142px) minmax(0, 1fr); gap:clamp(14px, 3cqi, 24px); align-items:start; }
