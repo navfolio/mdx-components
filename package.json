@@ -26,6 +26,7 @@
     "./MermaidRenderer.astro": "./src/MermaidRenderer.astro",
     "./Carousel.astro": "./src/Carousel.astro",
     "./MusicPlayer.astro": "./src/MusicPlayer.astro",
+    "./MediaShelf.astro": "./src/MediaShelf.astro",
     "./ZoomableImage.astro": "./src/ZoomableImage.astro",
     "./music-theme": "./src/lib/music-theme.ts",
     "./friend-data": "./src/lib/friend-data.ts"

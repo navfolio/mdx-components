@@ -13,6 +13,7 @@ Then import only the component needed by an MDX file:
 ```astro
 import FriendLinkCard from '@navfolio/mdx-components/FriendLinkCard.astro';
 import FriendCircle from '@navfolio/mdx-components/FriendCircle.astro';
+import MediaShelf from '@navfolio/mdx-components/MediaShelf.astro';
 ```
 
 ## Friend links
@@ -59,6 +60,30 @@ import MusicPlayer from '@navfolio/mdx-components/MusicPlayer.astro';
 Official third-party players are rendered inside their provider iframe. Set `provider` and pass a normal Spotify or SoundCloud `url`, or an official `embedUrl` for Bandcamp, Apple Music, and 网易云音乐. The outer card follows the selected local theme; iframe internals remain provider-owned.
 
 `MusicPlayer` also accepts `size="narrow|compact|normal|wide|full"`. Pass a native `playlist` array to reveal a selectable, collapsed track list.
+
+## Media shelf
+
+`MediaShelf` displays books, films, series, albums, and podcasts. The default
+`variant="shelf"` is a centered cover-first grid that spans the full MDX content
+width. Use `variant="inline"` for a quiet, borderless reading-list layout with a
+cover on the left and an optional note on the right.
+
+```astro
+import MediaShelf from '@navfolio/mdx-components/MediaShelf.astro';
+
+<MediaShelf
+  variant="inline"
+  items={[
+    {
+      title: 'The Left Hand of Darkness',
+      creator: 'Ursula K. Le Guin',
+      type: 'book',
+      rating: 5,
+      note: 'A story about patience, trust, and the limits of inherited categories.',
+    },
+  ]}
+/>
+```
 
 ## Peer dependencies
 
