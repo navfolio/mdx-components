@@ -68,6 +68,10 @@ Official third-party players are rendered inside their provider iframe. Set `pro
 width. Use `variant="inline"` for a quiet, borderless reading-list layout with a
 cover on the left and an optional note on the right.
 
+For a linked long-form review, give an item `reviewHref` and the localized
+`reviewLabel` to show a compact reading hint with an icon. When both `href` and
+`reviewHref` are present, the review link takes priority.
+
 ```astro
 import MediaShelf from '@navfolio/mdx-components/MediaShelf.astro';
 
