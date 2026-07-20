@@ -1,5 +1,6 @@
 ---
 import type { ImageMetadata } from 'astro';
+import { BookOpenText } from 'lucide-astro';
 
 export type MediaShelfItem = {
   title: string;
@@ -8,6 +9,8 @@ export type MediaShelfItem = {
   cover?: string | ImageMetadata;
   rating?: number;
   href?: string;
+  reviewHref?: string;
+  reviewLabel?: string;
   note?: string;
 };
 
@@ -31,6 +34,7 @@ const ratingLabel = (rating: number | undefined) =>
 >
   {
     items.map((item) => {
+      const destination = item.reviewHref ?? item.href;
       const content = <>
         <figure class="navfolio-media-shelf__cover" data-media-type={item.type}>
           {coverSrc(item.cover) ? (
@@ -42,12 +46,13 @@ const ratingLabel = (rating: number | undefined) =>
         <div class="navfolio-media-shelf__content">
           <strong>{item.title}</strong>
           <span class="navfolio-media-shelf__meta">{item.creator}{ratingLabel(item.rating)}</span>
+          {item.reviewHref && item.reviewLabel ? <span class="navfolio-media-shelf__review"><BookOpenText size={13} strokeWidth={1.8} aria-hidden="true" />{item.reviewLabel}</span> : null}
           {item.note ? <p>{item.note}</p> : null}
         </div>
       </>;
 
-      return item.href ? (
-        <a class="navfolio-media-shelf__item" href={item.href} target="_blank" rel="noreferrer">
+      return destination ? (
+        <a class="navfolio-media-shelf__item" href={destination} target={item.reviewHref ? undefined : '_blank'} rel={item.reviewHref ? undefined : 'noreferrer'}>
           {content}
         </a>
       ) : (
@@ -67,6 +72,7 @@ const ratingLabel = (rating: number | undefined) =>
   .navfolio-media-shelf__content strong, .navfolio-media-shelf__meta { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .navfolio-media-shelf__content strong { color:var(--paper-ink); font-family:var(--font-ui-label); font-size:.87rem; font-weight:500; line-height:1.4; }
   .navfolio-media-shelf__meta { margin-top:3px; color:var(--paper-ink-faint); font-family:var(--font-meta); font-size:.64rem; line-height:1.5; }
+  .navfolio-media-shelf__review { display:inline-flex; align-items:center; gap:4px; width:max-content; max-width:100%; margin-top:7px; color:var(--paper-accent); font-family:var(--font-meta); font-size:.64rem; line-height:1.25; }
   .navfolio-media-shelf__content p { margin:8px 0 0; color:var(--paper-ink-soft); font-family:var(--font-serif-cn); font-size:.9rem; line-height:1.75; }
   .navfolio-media-shelf__item:hover strong { color:var(--paper-accent); }
 
@@ -76,6 +82,7 @@ const ratingLabel = (rating: number | undefined) =>
   .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='film'], .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='series'] { aspect-ratio:16 / 10; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='album'], .navfolio-media-shelf--shelf .navfolio-media-shelf__cover[data-media-type='podcast'] { aspect-ratio:1; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__content { width:100%; }
+  .navfolio-media-shelf--shelf .navfolio-media-shelf__review { justify-content:center; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__content p { display:none; }
   .navfolio-media-shelf--shelf .navfolio-media-shelf__item:only-child { grid-column:1 / -1; width:min(100%, 176px); justify-self:center; }
 
