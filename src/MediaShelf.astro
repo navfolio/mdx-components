@@ -25,7 +25,7 @@ interface Props {
 const { items, variant = 'shelf', columns = 4, class: className } = Astro.props;
 const coverSrc = (cover: MediaShelfItem['cover']) => (typeof cover === 'string' ? cover : cover?.src);
 const ratingLabel = (rating: number | undefined) =>
-  rating ? ` · ${'★'.repeat(Math.max(1, Math.min(5, Math.round(rating))))}` : '';
+  rating ? '★'.repeat(Math.max(1, Math.min(5, Math.round(rating)))) : undefined;
 ---
 
 <section
@@ -36,6 +36,7 @@ const ratingLabel = (rating: number | undefined) =>
   {
     items.map((item) => {
       const destination = item.reviewHref ?? item.href;
+      const rating = ratingLabel(item.rating);
       const content = <>
         <figure
           class="navfolio-media-shelf__cover"
@@ -50,7 +51,10 @@ const ratingLabel = (rating: number | undefined) =>
         </figure>
         <div class="navfolio-media-shelf__content">
           <strong>{item.title}</strong>
-          <span class="navfolio-media-shelf__meta">{item.creator}{ratingLabel(item.rating)}</span>
+          <span class="navfolio-media-shelf__meta">
+            <span class="navfolio-media-shelf__creator">{item.creator}</span>
+            {rating && <span class="navfolio-media-shelf__rating">{rating}</span>}
+          </span>
           {item.reviewHref && item.reviewLabel ? <span class="navfolio-media-shelf__review"><BookOpenText size={13} strokeWidth={1.8} aria-hidden="true" />{item.reviewLabel}</span> : null}
           {item.note ? <p>{item.note}</p> : null}
         </div>
@@ -74,9 +78,11 @@ const ratingLabel = (rating: number | undefined) =>
   .navfolio-media-shelf__cover img { width:100%; height:100%; object-fit:cover; }
   .navfolio-media-shelf__cover span { font-family:var(--font-meta); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; }
   .navfolio-media-shelf__content { min-width:0; }
-  .navfolio-media-shelf__content strong, .navfolio-media-shelf__meta { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .navfolio-media-shelf__content strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .navfolio-media-shelf__content strong { color:var(--paper-ink); font-family:var(--font-ui-label); font-size:.87rem; font-weight:500; line-height:1.4; }
-  .navfolio-media-shelf__meta { margin-top:3px; color:var(--paper-ink-faint); font-family:var(--font-meta); font-size:.64rem; line-height:1.5; }
+  .navfolio-media-shelf__meta { display:flex; min-width:0; gap:.45em; margin-top:3px; color:var(--paper-ink-faint); font-family:var(--font-meta); font-size:.64rem; line-height:1.5; }
+  .navfolio-media-shelf__creator { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .navfolio-media-shelf__rating { flex:none; white-space:nowrap; }
   .navfolio-media-shelf__review { display:inline-flex; align-items:center; gap:4px; width:max-content; max-width:100%; margin-top:7px; color:var(--paper-accent); font-family:var(--font-meta); font-size:.64rem; line-height:1.25; }
   .navfolio-media-shelf__content p { margin:8px 0 0; color:var(--paper-ink-soft); font-family:var(--font-serif-cn); font-size:.9rem; line-height:1.75; }
   .navfolio-media-shelf__item:hover strong { color:var(--paper-accent); }
@@ -110,5 +116,5 @@ const ratingLabel = (rating: number | undefined) =>
   @container (max-width: 620px) { .navfolio-media-shelf--shelf { grid-template-columns:repeat(min(3, var(--media-shelf-columns)), minmax(0, 1fr)); } }
   @container (max-width: 420px) { .navfolio-media-shelf--shelf { grid-template-columns:repeat(2, minmax(0, 1fr)); } .navfolio-media-shelf--inline .navfolio-media-shelf__item { grid-template-columns:88px minmax(0, 1fr); gap:14px; } }
   @media (max-width: 720px) { .navfolio-media-shelf--shelf { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
-  @media (max-width: 430px) { .navfolio-media-shelf--shelf { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 430px) { .navfolio-media-shelf--shelf { grid-template-columns:repeat(2, minmax(0, 1fr)); } .navfolio-media-shelf--shelf .navfolio-media-shelf__meta { flex-direction:column; gap:0; } }
 </style>
